@@ -126,6 +126,7 @@ pipeline{
                  sh 'docker push ${REGISTRY}:${VERSION}'
                 }
              }
+             
     stage('Display All Running Images') {
             steps {
                sh 'docker images'
@@ -142,6 +143,7 @@ pipeline{
           				  }
           			 }
           		}
+
   stage('Display docker-compose content ') {
         steps {
             sh 'cat docker-compose.yml'
@@ -182,14 +184,6 @@ pipeline{
            }
          }
       }
- //  stage('Remove ps from Agent Server') {
- //        steps {
- //              sh 'docker ps -f name=framed -q | xargs --no-run-if-empty docker container stop'
- //              sh 'docker container ls -a -fname=framed  -q | xargs -r docker container rm'
- //              sh 'docker container ls '
- //                }
- //            }
-
    }// stages blocks closed
    post {
        aborted {
