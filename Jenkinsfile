@@ -155,17 +155,17 @@ pipeline{
             sh 'cat docker-compose.yml'
             }
         }
- 
- //  stage('Stop And Remove previous Running Container') {
- //      steps{
- //          sshagent(['ec2-user-password-credentials']) {
- //               sh 'docker ps -f name=springboot -q | xargs --no-run-if-empty docker container stop'
- //               sh 'docker container ls -a -fname=springboot  -q | xargs -r docker container rm'
- //               sh 'docker container ls '
- //                  }
- //                }
- //             }
- //
+
+  stage('Stop And Remove previous Running Container') {
+      steps{
+          sshagent(['ec2-user-password-credentials']) {
+               sh 'docker ps -f name=springboot -q | xargs --no-run-if-empty docker container stop'
+               sh 'docker container ls -a -fname=springboot  -q | xargs -r docker container rm'
+               sh 'docker container ls '
+                  }
+                }
+             }
+
  //  stage('Remove All Images Before Deployment') {
  //        steps{
  //            sshagent(['ec2-user-password-credentials']) {
@@ -174,14 +174,14 @@ pipeline{
  //               }
  //             }
  //
- // stage('Deploy On Prod') {
- //     steps{
- //       sshagent(['ec2-user-password-credentials']) {
- //            sh "scp -o StrictHostKeyChecking=no docker-compose.yml ec2-user@18.219.210.241:"
- //            sh "ssh -o StrictHostKeyChecking=no ec2-user@18.219.210.241 docker-compose up -d"
- //           }
- //         }
- //      }
+ stage('Deploy On Prod') {
+     steps{
+       sshagent(['node01-jenkins-connection']) {
+            sh "scp -o StrictHostKeyChecking=no docker-compose.yml makutaworldmpm@10.206.0.2:"
+            sh "ssh -o StrictHostKeyChecking=no makutaworldmpm@10.206.0.2 docker-compose up -d"
+           }
+         }
+      }
  //
   stage('Remove images from Agent Server') {
         steps{
