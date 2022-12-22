@@ -166,14 +166,14 @@ pipeline{
                 }
              }
 
- //  stage('Remove All Images Before Deployment') {
- //        steps{
- //            sshagent(['ec2-user-password-credentials']) {
- //              sh 'docker rmi  $(docker images -q)'
- //                  }
- //               }
- //             }
- //
+  stage('Remove All Images Before Deployment') {
+           steps{
+               sshagent(['node01-jenkins-connection']) {
+                  sh 'docker rmi  $(docker images -q)'
+                  }
+               }
+          }
+
  stage('Deploy On Prod') {
      steps{
        sshagent(['node01-jenkins-connection']) {
@@ -182,15 +182,6 @@ pipeline{
            }
          }
       }
- //
-  stage('Remove images from Agent Server') {
-        steps{
-            script {
-                sh 'docker rmi  $(docker images -q)'
-                  }
-              }
-            }
-
  //  stage('Remove ps from Agent Server') {
  //        steps {
  //              sh 'docker ps -f name=framed -q | xargs --no-run-if-empty docker container stop'
