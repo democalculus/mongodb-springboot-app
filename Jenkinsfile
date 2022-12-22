@@ -59,17 +59,9 @@ pipeline{
 
       //Run Junt Test cases & Do the Build
 
-    stage('RunUnitTestcases&Build'){
+    stage('buildPackage'){
               steps{
-                  parallel(
-                        RunUnitTestCases: {
-                             sh "mvn test"
-                          },
-
-                Build: {
-                       sh "mvn clean package"
-                         }
-                     )
+                  sh "mvn clean package"
                   }
             }
 
