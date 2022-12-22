@@ -173,6 +173,14 @@ pipeline{
                   }
                }
           }
+ stage ('Approver Needed To Deploy On Prod')  {
+            steps {
+              echo "Taking approval from QA manager"
+              timeout(time: 7, unit: 'DAYS') {
+              input message: 'Do you want to proceed to PROD Deploy?', submitter: 'admin,manager_userid'
+             }
+            }
+          }
 
  stage('Deploy On Prod') {
      steps{
