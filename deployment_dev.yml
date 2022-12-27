@@ -25,7 +25,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx
-  namespace: dev 
+  namespace: dev
 spec:
   selector:
     app: nginx
@@ -33,4 +33,4 @@ spec:
   - port: 80
     targetPort: 8080
     nodePort: 30032
-  type: LoadBanlancer
+  type: LoadBalancer
