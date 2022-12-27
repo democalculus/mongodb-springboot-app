@@ -158,7 +158,6 @@ pipeline{
  stage('Deploy On Dev') {
         steps{
             sshagent(['node01-jenkins-connection']) {
-                sh "ssh -o StrictHostKeyChecking=no makutaworldmpm@10.206.0.10 kubectl delete -f ."
                 sh "scp -o StrictHostKeyChecking=no deployment_dev.yml makutaworldmpm@10.206.0.10:"
                   sh "ssh -o StrictHostKeyChecking=no makutaworldmpm@10.206.0.10 kubectl apply -f ."
                   }
@@ -176,7 +175,6 @@ pipeline{
  stage('Deploy On Prod') {
      steps{
        sshagent(['node01-jenkins-connection']) {
-            sh "ssh -o StrictHostKeyChecking=no makutaworldmpm@10.206.0.10 kubectl delete -f ."
             sh "scp -o StrictHostKeyChecking=no deployment_prod.yml makutaworldmpm@10.206.0.10:"
             sh "ssh -o StrictHostKeyChecking=no makutaworldmpm@10.206.0.10 kubectl apply -f ."
            }
