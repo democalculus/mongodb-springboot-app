@@ -106,7 +106,7 @@ pipeline{
   //                 }
   //             }
    
-     stage('K8S Deployment - DEV') {
+     stage('unkown') {
            steps {
              parallel(
                "Login And Push Image": {
