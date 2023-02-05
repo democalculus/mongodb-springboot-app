@@ -52,24 +52,12 @@ pipeline{
                    }
                 }
 
-      // stage(" Maven buld Artifacts Package"){
-      //             def mavenCMD = "${mavenHome}/bin/mvn"
-      //             sh "${mavenCMD} clean package"
-      //           }
-
-      //Run Junt Test cases & Do the Build
-
-    stage('buildPackage'){
-              steps{
-                  sh "mvn clean package"
-                  archive 'target/*.jar'
-                  }
-            }
     stage('package And CodeCoverage') {
            steps {
              parallel(
                "BuildPackage": {
                    sh "mvn clean package"
+                   archive 'target/*.jar'
                  },
                "Jacoco coverate": {
                    jacoco(
@@ -99,12 +87,6 @@ pipeline{
              )
            }
          } 
-
-  // stage('Building Docker Images') {
-  //         steps {
-  //             sh "docker build -t ${REGISTRY}:${VERSION} ."
-  //                 }
-  //             }
    
      stage('unkown') {
            steps {
@@ -122,37 +104,29 @@ pipeline{
            }
          } 
 
-    // // stage('Push Docker Image To DockerHub') {
-    // //       steps {
-    // //                withCredentials([string(credentialsId: 'eagunuworld_dockerhub_creds', variable: 'eagunuworld_dockerhub_creds')])  {
-    // //                sh "docker login -u eagunuworld -p ${eagunuworld_dockerhub_creds} "
-    // //                }
-    // //              sh 'docker push ${REGISTRY}:${VERSION}'
-    // //             }
-    // //          }
-             
-    // stage('Display All Running Images') {
-    //         steps {
-    //            sh 'docker images'
-    //         }
-    //       }
-
-  stage('Update deployment image Tag'){
+  stage('Update deployment image Tag And cat'){
       steps{
-          	script{
+        parallel(
+           "runing": {
+              script{
           				    sh '''final_tag=$(echo $VERSION | tr -d ' ')
           				     echo ${final_tag}test
           				     sed -i "s/BUILD_TAG/$final_tag/g"  deployment_dev.yml
           				     '''
           				  }
-          			 }
-          		}
+                },
+               "Update Image latest": {
+                  sh 'cat deployment_dev.yml'
+                 }
+              )
+          	}
+          }
 
-  stage('Display deployment content after update ') {
-        steps {
-            sh 'cat deployment_dev.yml'
-            }
-        }
+  // stage('Display deployment content after update ') {
+  //       steps {
+  //           sh 'cat deployment_dev.yml'
+  //           }
+  //       }
 
   // stage('Stop And Remove previous Running Container') {
   //     steps{
