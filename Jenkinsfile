@@ -114,9 +114,8 @@ pipeline{
                    sh "docker login -u eagunuworld -p ${eagunuworld_dockerhub_creds} "
                    }
                    sh 'docker push ${REGISTRY}:${VERSION}'
-                  }
-                 },
-               "Display All Running Images": {
+                  },
+                "Display All Running Images": {
                   sh 'docker images'
                  }
              )
