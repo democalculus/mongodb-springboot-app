@@ -116,7 +116,7 @@ pipeline{
           				  }
                 },
                "Update Image latest": {
-                  sh 'cat deployment_dev.yml'
+                  sh 'cat deployment_prod.yml'
                  }
               )
           	}
@@ -138,13 +138,19 @@ pipeline{
   //               }
   //            }
 
-  stage('Remove All Images Before Deployment') {
-           steps{
-               sshagent(['node01-jenkins-connection']) {
-                  sh 'docker rmi  $(docker images -q)'
-                  }
-               }
-          }
+    stage('Remove docker image and Check deploy image') {
+           steps {
+             parallel(
+               "cleaning Images": {
+                    sh 'docker rmi  $(docker images -q)'
+                 },
+               "checking image version": {
+                  sh 'cat deployment_dev.yml'
+                 }
+             )
+           }
+         } 
+
    
    stage('K8S Deployment - DEV') {
            steps {
