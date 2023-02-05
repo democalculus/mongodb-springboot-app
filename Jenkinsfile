@@ -117,7 +117,7 @@ pipeline{
                   }
                  },
                "Display All Running Images": {
-                  sh 'docker images
+                  sh 'docker images'
                  }
              )
            }
