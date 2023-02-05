@@ -33,7 +33,7 @@ pipeline{
               BRANCH_NAME = "${env.BRANCH_NAME}"
               NODE_NAME = "${env.NODE_NAME}"
               REGISTRY = 'eagunuworld/mongodb-springboot-app'
-              REGISTRY_CREDENTIAL = 'eagunuworld_dockerhub_creds_username-pwd'
+              REGISTRY_CREDENTIAL = 'eagunuworld_dockerhub_creds'
             }
 
     stages {
@@ -98,7 +98,7 @@ pipeline{
 
     stage('Push Docker Image To DockerHub') {
           steps {
-                   withCredentials([string(credentialsId: 'eagunuworld_dockerhub_creds_username-pwd', variable: 'eagunuworld_dockerhub_creds')])  {
+                   withCredentials([string(credentialsId: 'eagunuworld_dockerhub_creds', variable: 'eagunuworld_dockerhub_creds')])  {
                    sh "docker login -u eagunuworld -p ${eagunuworld_dockerhub_creds} "
                    }
                  sh 'docker push ${REGISTRY}:${VERSION}'
