@@ -64,10 +64,14 @@ pipeline{
                   sh "mvn clean package"
                   }
             }
-
-  stage ('Code coverage failed without build marked')  {
-                  steps {
-                    jacoco(
+    stage('package And CodeCoverage') {
+           steps {
+             parallel(
+               "BuildPackage": {
+                   sh "mvn clean package"
+                 },
+               "Jacoco coverate": {
+                   jacoco(
                       deltaBranchCoverage: '80',
                       deltaClassCoverage: '80',
                       deltaComplexityCoverage: '80',
@@ -87,8 +91,35 @@ pipeline{
                       minimumLineCoverage: '80',
                       minimumMethodCoverage: '80'
                        )
-                  }
-              }
+                 }
+             )
+           }
+         } 
+
+  // stage ('Code coverage failed without build marked')  {
+  //                 steps {
+  //                   jacoco(
+  //                     deltaBranchCoverage: '80',
+  //                     deltaClassCoverage: '80',
+  //                     deltaComplexityCoverage: '80',
+  //                     deltaInstructionCoverage: '80',
+  //                     deltaLineCoverage: '80',
+  //                     deltaMethodCoverage: '80',
+  //                     maximumBranchCoverage: '80',
+  //                     maximumClassCoverage: '80',
+  //                     maximumComplexityCoverage: '80',
+  //                     maximumInstructionCoverage: '80',
+  //                     maximumLineCoverage: '80',
+  //                     maximumMethodCoverage: '80',
+  //                     minimumBranchCoverage: '80',
+  //                     minimumClassCoverage: '80',
+  //                     minimumComplexityCoverage: '80',
+  //                     minimumInstructionCoverage: '80',
+  //                     minimumLineCoverage: '80',
+  //                     minimumMethodCoverage: '80'
+  //                      )
+  //                 }
+  //             }
 
   stage('Building Docker Images') {
           steps {
