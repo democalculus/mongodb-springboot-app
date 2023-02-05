@@ -62,6 +62,7 @@ pipeline{
     stage('buildPackage'){
               steps{
                   sh "mvn clean package"
+                  archive 'target/*.jar'
                   }
             }
     stage('package And CodeCoverage') {
@@ -91,56 +92,51 @@ pipeline{
                       minimumLineCoverage: '80',
                       minimumMethodCoverage: '80'
                        )
+                 },
+               "Build Docker Image": {
+                   sh "docker build -t ${REGISTRY}:${VERSION} ."
                  }
              )
            }
          } 
 
-  // stage ('Code coverage failed without build marked')  {
-  //                 steps {
-  //                   jacoco(
-  //                     deltaBranchCoverage: '80',
-  //                     deltaClassCoverage: '80',
-  //                     deltaComplexityCoverage: '80',
-  //                     deltaInstructionCoverage: '80',
-  //                     deltaLineCoverage: '80',
-  //                     deltaMethodCoverage: '80',
-  //                     maximumBranchCoverage: '80',
-  //                     maximumClassCoverage: '80',
-  //                     maximumComplexityCoverage: '80',
-  //                     maximumInstructionCoverage: '80',
-  //                     maximumLineCoverage: '80',
-  //                     maximumMethodCoverage: '80',
-  //                     minimumBranchCoverage: '80',
-  //                     minimumClassCoverage: '80',
-  //                     minimumComplexityCoverage: '80',
-  //                     minimumInstructionCoverage: '80',
-  //                     minimumLineCoverage: '80',
-  //                     minimumMethodCoverage: '80'
-  //                      )
+  // stage('Building Docker Images') {
+  //         steps {
+  //             sh "docker build -t ${REGISTRY}:${VERSION} ."
   //                 }
   //             }
-
-  stage('Building Docker Images') {
-          steps {
-              sh "docker build -t ${REGISTRY}:${VERSION} ."
-                  }
-              }
-
-    stage('Push Docker Image To DockerHub') {
-          steps {
+   
+     stage('K8S Deployment - DEV') {
+           steps {
+             parallel(
+               "Login And Push Image": {
                    withCredentials([string(credentialsId: 'eagunuworld_dockerhub_creds', variable: 'eagunuworld_dockerhub_creds')])  {
                    sh "docker login -u eagunuworld -p ${eagunuworld_dockerhub_creds} "
                    }
-                 sh 'docker push ${REGISTRY}:${VERSION}'
-                }
-             }
+                   sh 'docker push ${REGISTRY}:${VERSION}'
+                  }
+                 },
+               "Display All Running Images": {
+                  sh 'docker images
+                 }
+             )
+           }
+         } 
+
+    // // stage('Push Docker Image To DockerHub') {
+    // //       steps {
+    // //                withCredentials([string(credentialsId: 'eagunuworld_dockerhub_creds', variable: 'eagunuworld_dockerhub_creds')])  {
+    // //                sh "docker login -u eagunuworld -p ${eagunuworld_dockerhub_creds} "
+    // //                }
+    // //              sh 'docker push ${REGISTRY}:${VERSION}'
+    // //             }
+    // //          }
              
-    stage('Display All Running Images') {
-            steps {
-               sh 'docker images'
-            }
-          }
+    // stage('Display All Running Images') {
+    //         steps {
+    //            sh 'docker images'
+    //         }
+    //       }
 
   stage('Update deployment image Tag'){
       steps{
