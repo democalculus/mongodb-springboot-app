@@ -52,14 +52,23 @@ pipeline{
                    }
                 }
 
-     stage('Mutation Tests - PIT') {            //(Pit mutation) is a plugin in jenkis and plugin was added in pom.xml line 68
+    //  stage('Mutation Tests - PIT') {            //(Pit mutation) is a plugin in jenkis and plugin was added in pom.xml line 68
+    //   steps {
+    //     sh "mvn org.pitest:pitest-maven:mutationCoverage"  //section 3 video 
+    //   }
+    //   post {
+    //     always {
+    //       pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+    //     }
+    //   }
+    // }
+
+    stage('SonarQube - SAST') {
       steps {
-        sh "mvn org.pitest:pitest-maven:mutationCoverage"  //section 3 video 
-      }
-      post {
-        always {
-          pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
-        }
+        sh "mvn clean package sonar:sonar \
+           -Dsonar.projectKey=eagunu-number \
+           -Dsonar.host.url=http://34.16.128.183:9000 \
+           -Dsonar.login=sqp_b920c762c89da87913cee2831bb77addc36c73b6"
       }
     }
 
