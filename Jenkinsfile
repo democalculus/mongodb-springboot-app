@@ -52,6 +52,17 @@ pipeline{
                    }
                 }
 
+     stage('Mutation Tests - PIT') {            //(Pit mutation) is a plugin in jenkis and plugin was added in pom.xml line 68
+      steps {
+        sh "mvn org.pitest:pitest-maven:mutationCoverage"  //section 3 video 
+      }
+      post {
+        always {
+          pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+        }
+      }
+    }
+
     stage('package And CodeCoverage') {
            steps {
              parallel(
