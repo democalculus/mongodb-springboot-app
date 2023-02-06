@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-deployment
+  name: mongo-app-pod
   #namespace: dev
   labels:
-    app: nginx
+    app: mongo-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: nginx
+      app: mongo-app
   template:
     metadata:
       labels:
-        app: nginx
+        app: mongo-app
     spec:
       containers:
-      - name: nginx
+      - name: mongo-app-pod
         image: eagunuworld/mongodb-springboot-app:BUILD_TAG
         ports:
         - containerPort: 8080
@@ -24,11 +24,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx
+  name: mongo-app
   #namespace: dev
 spec:
   selector:
-    app: nginx
+    app: mongo-app
   ports:
   - port: 80
     targetPort: 8080
