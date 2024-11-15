@@ -1,37 +1,44 @@
-# Build Project Using Maven
+# mss-us-east-db-springboot-app
 
-Maven is java based build tool to generate executable 
+node {
+     def buildNumber = BUILD_NUMBER
+     def mvnHome = tool 'maven-build'
 
-packages(jar, ear,war) for java based projects.
-
-```bash
-mvn clean package
-```
-
-## Create Docker Image
-Docker is a continerization tool.Using docker we can deploy our applications as 
-
-containers using docker images. Containers contains application code and also the softwares,
-
-config files whatever is required for our application to run.
-
-Create docker image using Dockerfile
+    stage ("checkout")  {
+    git credentialsId: 'git-authentication-jenkins-login', url: 'https://github.com/agunu2025/mss-mongo-springboot-app.git'
+    }
 
 
-```docker
-docker build -t dockerhandson/spring-boot-mongo .
-```
+  stage ('build')  {
+    sh "${mvnHome}/bin/mvn clean install "
+    }
 
-## Deploy Application Using Docker Compose 
+    stage('Build Docker Image'){
+        sh "docker build . -t agunu2025/mss-mongodb-app:${buildNumber}"
+    }
 
-```docker-compose 
-docker-compose up -d 
-```
+     stage('Push Docker Image'){
+         withCredentials([string(credentialsId: 'dockerAuthenticationpublic', variable: 'dockerAuthenticationpublic')])  {
+          sh "docker login -u agunu2025 -p ${dockerAuthenticationpublic}"
+        }
+        sh "docker push agunu2025/mss-mongodb-app:${buildNumber} "
+     }
 
-## List Docker Containers
-```docker
-docker ps -a
-```
+      stage("Deploy To plab02"){
+      sh "chmod +x global.yml docker-compose-plab02.yml  "
+      sshagent(['aws-private-key-connection']) {
+       sh "scp -o StrictHostKeyChecking=no global.yml docker-compose-plab02.yml  ec2-user@3.138.158.136:/home/ec2-user/"
+       sh 'docker-compose -f global.yml -f docker-compose-qlab02.yml  up -d '
+       sh 'rm -rf global.yml docker-compose-qlab02.yml '
+       }
+      }
 
-## License
-[Mithun Technologies](http://mithuntechnologies.co.in)
+      stage("Deploy To qlab02"){
+      sshagent(['SSH_PRIVATE_KEY_docker']) {
+        sh "scp -o StrictHostKeyChecking=no global.yml docker-compose-qlab02.yml  ec2-user@3.138.158.137:/home/ec2-user/"
+       }
+       sh "ssh -o StrictHostKeyChecking=no ec2-user@3.141.10.50"
+       sh "ssh ec2-user@3.141.10.50 docker-compose -f global.yml -f docker-compose-qlab02.yml  up "
+      }
+
+}

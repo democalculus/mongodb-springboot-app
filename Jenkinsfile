@@ -1,128 +1,212 @@
-pipeline{
-    //agent any
-    agent{
-        label "javaAgent"
-         }
+//${library.jenkins-slack-library.version}
+@Library('Slack-us-east-jenkins-prod') _
 
-    tools{
-         maven 'maven:3.6.3'
-          }
+pipeline {
 
-       environment {
-            DEPLOY = "${env.BRANCH_NAME == "python-dramed" || env.BRANCH_NAME == "master" ? "true" : "false"}"
-            NAME = "${env.BRANCH_NAME == "python-dramed" ? "example" : "example-staging"}"
-            def mavenHome =  tool name: "maven:3.6.3", type: "maven"
-            //def mavenCMD = "${mavenHome}/usr/share/maven"
-            VERSION = "${env.BUILD_ID}"
-            REGISTRY = 'eagunuworld/mongodb-springboot-app'
-            REGISTRY_CREDENTIAL = 'eagunuworld_dockerhub_creds'
-          }
+  agent { label 'NodeOne' }
 
-    stages {
+  options {
+       buildDiscarder logRotator(
+           artifactDaysToKeepStr: '5',
+           artifactNumToKeepStr: '5',
+           daysToKeepStr: '5',
+           numToKeepStr: '5')
+          timestamps()
+        }
 
+  tools {
+      maven 'UI_Maven3..9.9'
+  }
 
-      // stage('Example') {
-      //      if (env.BRANCH_NAME == 'python-dramed') {
-      //            echo 'I only execute on this environment $env.BRANCH_NAME'
-      //          } else {
-      //               echo 'I execute elsewhere'
-      //              }
-      //           }
-      stage('checking... maven version ') {
-          steps {
-                  sh "mvn --version"
-                   }
-                }
+  environment {
+    BUILD_NUMBER = "${env.BUILD_ID}"
+    eagunu_pwd = 'eagunuworld_docker_hub_password'
+    //eagunu docker registry repository
+    registry = "eagunuworld/mongodb-springboot-application"
+    //eagunu dockerhub registry
+    registryCredential = 'eagunuworld-docker-username-and-pwd'
+    dockerImage = ''
+    //latest_version_update
+    imageVersion = "eagunuworld/mongodb-springboot-application:v$BUILD_NUMBER"
+    // This can be nexus3 or nexus2
+    NEXUS_VERSION = "nexus3"
+    // This can be http or https
+    NEXUS_PROTOCOL = "http"
+    // Where your Nexus is running
+    NEXUS_URL = "3.143.172.151:8081"
+    // Repository where we will upload the artifact
+    NEXUS_REPOSITORY = "mongodb-springboot-application"
+    // Jenkins credential id to authenticate to Nexus OSS
+    NEXUS_CREDENTIAL_ID = "nexus-username-password-creds-demoshool"
+    //ARTIFACT_VERSION = "${BUILD_NUMBER}"
 
-      // stage(" Maven buld Artifacts Package"){
-      //             def mavenCMD = "${mavenHome}/bin/mvn"
-      //             sh "${mavenCMD} clean package"
-      //           }
+     //invalid tag "eagunuworld/mss-maven-web-app:v1.1.1:20": invalid reference format
+    //REGISTRY_CREDENTIAL = 'eagunuworld-docker-password-logins'
+    //containerName = "devsecops-container"
+    //serviceName = "devsecops-svc"
+  //  imageName = "siddharth67/numeric-app:${GIT_COMMIT}"
+     //jenkins_server_url = "http://3.143.147.204:8080/"
+    //mss_web_app = "/increment/99"
+  }
 
-     stage('Build maven packages '){
-              steps{
-                    sh "mvn clean package"
-                      }
-                  }
-
-      stage('Building Docker Images') {
-                steps {
-                  sh "sudo chmod 666 /var/run/docker.sock"
-                  sh "docker build -t ${REGISTRY}:${VERSION} ."
-                     }
-                 }
-
-    stage('Push Docker Image To DockerHub') {
-              steps {
-                   withCredentials([string(credentialsId: 'eagunuworld_dockerhub_creds', variable: 'eagunuworld_dockerhub_creds')])  {
-                   sh "docker login -u eagunuworld -p ${eagunuworld_dockerhub_creds} "
-                   }
-                 sh 'docker push ${REGISTRY}:${VERSION}'
-                }
-             }
-    stage('Display All Files In Console') {
+  stages {
+    stage('Cloning Git') {
             steps {
-               sh 'ls -lart'
-            }
-          }
-
-  stage('Update docker-compose Tag'){
-      steps{
-          	script{
-          				    sh '''final_tag=$(echo $VERSION | tr -d ' ')
-          				     echo ${final_tag}test
-          				     sed -i "s/BUILD_TAG/$final_tag/g"  docker-compose.yml
-          				     '''
-          				  }
-          			 }
-          		}
-  stage('Display docker-compose content ') {
-        steps {
-            sh 'cat docker-compose.yml'
+                checkout([$class: 'GitSCM', branches: [[name: '*/mss-us-east-2-db']], extensions: [], userRemoteConfigs: [[credentialsId: 'democalculus-github-login-creds', url: 'https://github.com/democalculus/mss-us-east-db-springboot-app.git']]])
             }
         }
 
-  stage('Stop And Remove Running Container') {
-      steps{
-          sshagent(['ec2-user-password-credentials']) {
-               sh 'docker ps -f name=springboot -q | xargs --no-run-if-empty docker container stop'
-               sh 'docker container ls -a -fname=springboot  -q | xargs -r docker container rm'
-               sh 'docker container ls '
-                  }
-                }
-             }
+    stage ('Build wep app war file') {
+      steps {
+      sh 'mvn clean package'
+       }
+    }
+   //hardcoded in pom.xml file
+    // stage ('SonarQubeReport') {
+    //   steps {
+    //   sh 'mvn clean package sonar:sonar'
+    // }
+    //  }
 
-  stage('Remove All Images Before Deployment') {
-        steps{
-            sshagent(['ec2-user-password-credentials']) {
-              sh 'docker rmi  $(docker images -q)'
-                  }
-               }
-             }
-
- stage('Deploy On Prod') {
-     steps{
-       sshagent(['ec2-user-password-credentials']) {
-            sh "scp -o StrictHostKeyChecking=no docker-compose.yml ec2-user@18.219.210.241:"
-            sh "ssh -o StrictHostKeyChecking=no ec2-user@18.219.210.241 docker-compose up -d"
-           }
-         }
+  stage ('SonarQube Plugin Report') {
+       steps {
+         withSonarQubeEnv('SonarQubeAccessToken') {
+         sh "mvn clean package sonar:sonar"
+          }
+        }
       }
 
-  stage('Remove ps from Agent Server') {
-        steps {
-              sh 'docker ps -f name=framed -q | xargs --no-run-if-empty docker container stop'
-              sh 'docker container ls -a -fname=framed  -q | xargs -r docker container rm'
-              sh 'docker container ls '
+      stage("publish to nexus") {
+          steps {
+              script {
+                  // Read POM xml file using 'readMavenPom' step , this step 'readMavenPom' is included in: https://plugins.jenkins.io/pipeline-utility-steps
+                  pom = readMavenPom file: "pom.xml";
+                  // Find built artifact under target folder
+                  filesByGlob = findFiles(glob: "target/*.${pom.packaging}");
+                  // Print some info from the artifact found
+                  echo "${filesByGlob[0].name} ${filesByGlob[0].path} ${filesByGlob[0].directory} ${filesByGlob[0].length} ${filesByGlob[0].lastModified}"
+                  // Extract the path from the File found
+                  artifactPath = filesByGlob[0].path;
+                  // Assign to a boolean response verifying If the artifact name exists
+                  artifactExists = fileExists artifactPath;
+
+                  if(artifactExists) {
+                      echo "*** File: ${artifactPath}, group: ${pom.groupId}, packaging: ${pom.packaging}, version ${pom.version}";
+
+                      nexusArtifactUploader(
+                          nexusVersion: NEXUS_VERSION,
+                          protocol: NEXUS_PROTOCOL,
+                          nexusUrl: NEXUS_URL,
+                          groupId: pom.groupId,
+                          version: BUILD_NUMBER,
+                          repository: NEXUS_REPOSITORY,
+                          credentialsId: NEXUS_CREDENTIAL_ID,
+                          artifacts: [
+                              // Artifact generated such as .jar, .ear and .war files.
+                              [artifactId: pom.artifactId,
+                              classifier: '',
+                              file: artifactPath,
+                              type: pom.packaging]
+                          ]
+                      );
+
+                  } else {
+                      error "*** File: ${artifactPath}, could not be found";
+                  }
+              }
+             }
+         }
+
+      stage('Building our image') {
+           steps{
+                script {
+                   dockerImage = docker.build registry + ":v$BUILD_NUMBER"
+                  }
+              }
+           }
+
+      // stage('QA approve') {
+      //        steps {
+      //          notifySlack("Do you approve QA deployment? $registry/job/$BUILD_NUMBER", [])
+      //            input 'Do you approve QA deployment?'
+      //            }
+      //        }
+
+      stage('Deploy our image') {
+         steps{
+             script {
+                docker.withRegistry( '', registryCredential ) {
+               dockerImage.push()
+              }
+            }
+           }
+         }
+
+    stage('updating image version') {
+          steps {
+                sh "bash update_image_version.sh"
                 }
             }
 
-  stage('Remove images from Agent Server') {
-        steps{
-            script {
-                  sh 'docker rmi  $(docker images -q)'
+    stage('DockerCleanUp ConfigMap') {
+                 steps {
+                   parallel(
+                     "Cleaning up docker Images": {
+                          sh 'docker rmi  ${imageVersion}'
+                         },
+                         "configureMap-Namespace": {
+                           sh 'bash cmSecret-ns.sh'
+                            }
+                      )
                   }
-                }
             }
-   }
-}
+
+    stage('springboot Deployment') {
+            steps {
+              parallel(
+                "Deployment": {
+                     sh 'springboot_commands.sh'
+                    },
+                    "Rollout Status": {
+                      sh 'bash springboot-rollout.sh'
+                        },
+                        "mongodb commands": {
+                       sh 'bash mongodb_commands.sh'
+                       }
+
+                      )
+                    }
+                }
+
+  // stage ('Deploying To EKS') {
+  //      steps {
+  //      sh 'kubectl apply -f mss-us-east-2-prod.yml'
+  //      }
+  //     }
+
+ }  //This line end the pipeline stages
+  post {   //This line start the post script
+        always {
+          //junit 'target/surefire-reports/*.xml'
+         // jacoco execPattern: 'target/jacoco.exec'
+        // pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+         //dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+         //publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP HTML Report', reportTitles: 'OWASP ZAP HTML Report'])
+
+         //Use sendNotifications.groovy from shared library and provide current build result as parameter
+         sendNotification currentBuild.result
+        }
+
+    //success {
+      //script {
+        /* Use slackNotifier.groovy from shared library and provide current build result as parameter */
+        //env.failedStage = "none"
+        //env.emoji = ":white_check_mark: :tada: :thumbsup_all:"
+        //sendNotification currentBuild.result
+      //}
+      //}
+
+    // failure {
+    //}
+  }  //this line close post script stage
+}    //This line close the jenkins pipeline

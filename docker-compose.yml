@@ -1,37 +1,36 @@
 version: '3.1'
 
 services:
-  springboot:
-    image: eagunuworld/mongodb-springboot-app:BUILD_TAG
+  springapp:
+    image: agunu2025/mss-mongodb-app:1
     restart: always # This will be ignored if we deploy in docker swarm
-    container_name: springboot
     environment:
     - MONGO_DB_HOSTNAME=mongo
     - MONGO_DB_USERNAME=devdb
-    - MONGO_DB_PASSWORD=devdb1234
+    - MONGO_DB_PASSWORD=devdb123
     ports:
-      - 8080:8080
+      - 8075:8080
+    container_name: app
+    working_dir: /opt/app
     depends_on:
       - mongo
     networks:
-    - springappnetwork
-
+    - mss-network
   mongo:
     image: mongo
-    container_name: springboot-mongo
     environment:
     - MONGO_INITDB_ROOT_USERNAME=devdb
-    - MONGO_INITDB_ROOT_PASSWORD=devdb1234
+    - MONGO_INITDB_ROOT_PASSWORD=devdb123
     volumes:
-      - mongobkp:/data/db
+      - mongodbbkp:/data/db
     restart: always
     networks:
-    - springappnetwork
+    - mss-network
 
 volumes:
-  mongobkp:
-    driver: local
+  mongodbbkp:
+    external: true
 
 networks:
-  springappnetwork:
-    driver: bridge
+  mss-network:
+    external: true
