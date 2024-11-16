@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sed -i "s#image_version_update#${imageVersion}#g" mss-us-east-db-prod.yml
-cat mss-us-east-db-prod.yml |grep  'eagunuworld'
+sed -i "s#image_version_update#${imageVersion}#g" springboot_manifest.yml
+cat springboot_manifest.yml |grep  'eagunuworld'

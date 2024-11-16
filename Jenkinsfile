@@ -1,9 +1,9 @@
 //${library.jenkins-slack-library.version}
-@Library('Slack-us-east-jenkins-prod') _
+@Library('Slack-us-east-jenkins-master_snow_prod') _
 
 pipeline {
 
-  agent { label 'NodeOne' }
+  agent { label 'eagunu-slave-agent' }
 
   options {
        buildDiscarder logRotator(
@@ -33,7 +33,7 @@ pipeline {
     // This can be http or https
     NEXUS_PROTOCOL = "http"
     // Where your Nexus is running
-    NEXUS_URL = "3.143.172.151:8081"
+    NEXUS_URL = "18.191.233.107:8081"
     // Repository where we will upload the artifact
     NEXUS_REPOSITORY = "mongodb-springboot-application"
     // Jenkins credential id to authenticate to Nexus OSS
@@ -52,7 +52,7 @@ pipeline {
   stages {
     stage('Cloning Git') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/mss-us-east-2-db']], extensions: [], userRemoteConfigs: [[credentialsId: 'democalculus-github-login-creds', url: 'https://github.com/democalculus/mss-us-east-db-springboot-app.git']]])
+                checkout([$class: 'GitSCM', branches: [[name: '*/master_snow_prod']], extensions: [], userRemoteConfigs: [[credentialsId: 'democalculus-github-login-creds', url: 'https://github.com/democalculus/mongodb-springboot-app.git']]])
             }
         }
 

@@ -35,7 +35,7 @@ spec:
               - mpm
       containers:
       - name: mss-springboot-con
-        image: eagunuworld/mss-us-east-2-dbap-prod:v16_3030                   #image_version_update
+        image: image_version_update                  #image_version_update
         ports:
         - containerPort: 8080
         env:
