@@ -33,7 +33,7 @@ pipeline {
     // This can be http or https
     NEXUS_PROTOCOL = "http"
     // Where your Nexus is running
-    NEXUS_URL = "18.191.233.107:8081"
+    NEXUS_URL = "18.216.167.207:8081"
     // Repository where we will upload the artifact
     NEXUS_REPOSITORY = "mongodb-springboot-application"
     // Jenkins credential id to authenticate to Nexus OSS
