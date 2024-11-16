@@ -13,7 +13,7 @@ echo $mss_pod_app
 echo $serviceName
 echo $imageName
 # #kubectl create ns ibm-ucd
-# kubectl -n ibm-ucd get deploy ${mss_pod_app} > /dev/null
+kubectl -n ibm-ucd get deploy ${mss_pod_app} > /dev/null
 
 if [[ $? -ne 0 ]]; then
     echo "mss pod Dployment ${mss_pod_app} doesn't exist,Appying kubectl commands"
