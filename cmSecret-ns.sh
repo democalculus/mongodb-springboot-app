@@ -1,5 +1,7 @@
 #!/bin/bash
 
+kubectl apply -f cmSecret-ns.yml
+
 if [[ $? -ne 0 ]]; then
     echo "please create namespace and configMap for mongodb App"
     kubectl apply -f cmSecret-ns.yml
