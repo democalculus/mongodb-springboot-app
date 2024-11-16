@@ -5,7 +5,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mss-springboot-pod
-  namespace: kibana
+  namespace: ibm-ucd
 spec:
   replicas: 2
   selector:
@@ -56,7 +56,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mss-springboot-svc
-  namespace: kibana
+  namespace: ibm-ucd 
 spec:
   type: ClusterIP    #LoadBalancer,NodePort
   selector:
