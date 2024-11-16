@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongo
-  namespace: kibana
+  namespace: ibm-ucd
 spec:
   selector:
     matchLabels:
@@ -50,7 +50,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mongo
-  namespace: kibana
+  namespace: ibm-ucd 
 spec:
   type: ClusterIP
   selector:
