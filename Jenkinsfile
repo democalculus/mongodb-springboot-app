@@ -165,7 +165,7 @@ pipeline {
             steps {
               parallel(
                 "Deployment": {
-                     sh 'springboot_commands.sh'
+                     sh 'bash springboot_commands.sh'
                     },
                     "Rollout Status": {
                       sh 'bash springboot-rollout.sh'
