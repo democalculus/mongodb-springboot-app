@@ -44,13 +44,13 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        #storageClassName: gp2
+        storageClassName: standard
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mongo
-  namespace: ibm-ucd 
+  namespace: ibm-ucd
 spec:
   type: ClusterIP
   selector:
